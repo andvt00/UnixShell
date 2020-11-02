@@ -67,15 +67,40 @@ void exec_command(char* command) {
 int main() {
 	char command[MAX_LENGTH];
 	int should_run = 1; /* flag to determine when to exit program */
+	char empty_history[] = "No commands in history";
+	char* history = NULL; // History buffer
 	while (should_run) {
-		printf("ssh>");
+		printf("ssh> ");
 		fflush(stdout);
 		fgets(command, MAX_LENGTH, stdin);
 		char** args = parse_arguments(command);
+		if (!args[0]) { // if command is empty
+			free(args);
+			continue;
+		}
+		if (strcmp("!!", args[0]) != 0) {
+			if (history) 
+				free(history);
+			history = (char*)malloc((strlen(command) + 1) * sizeof(char));
+			strcpy(history, command);
+		}
 		if (strcmp("exit", args[0]) == 0){
 			free(args);
 			should_run = 0;
 			break;
+		}
+		if (strcmp("!!", args[0]) == 0) { // Command from history buffer
+			if (!history) {
+				printf("%s\n", empty_history);
+				fflush(stdout);
+				free(args);
+				continue;
+			}
+			else {
+				printf("Command from history: %s\n", history);
+				fflush(stdout);
+				strcpy(command, history);
+			}
 		}
 		free(args);
 		exec_command(command);
