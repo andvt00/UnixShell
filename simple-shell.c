@@ -9,7 +9,7 @@
 char temp[MAX_LENGTH];
 
 //split string command to arguments
-char** parse_arguments(char *command, bool* isAnd) {
+char** parse_arguments(char *command) {
 	char delim[] = " \n\t\r\a";
 	unsigned int args_size = MAX_ARGS;
 	char** args = (char**)malloc(args_size * sizeof(char*));
@@ -30,25 +30,37 @@ char** parse_arguments(char *command, bool* isAnd) {
         param = strtok(NULL, delim);
     }
     args[size] = NULL;
-	//check if the last agrugemt is "&"
-    if (isAnd && strcmp("&", args[size-1]) == 0){
-    	*isAnd = true;
-    	args[size-1] = NULL; // delete the last "&" argument
-    }
     return args;
+}
+
+bool haveAndAtLast(char** args){
+	if (!args[0])
+		return false;
+	int size = 1;
+	while (args[size])
+		size++;
+	if (strcmp("&", args[size-1])==0){
+    	args[size-1] = NULL; //delete the last "&" argument
+    	return true;
+    }
+    return false;
+}
+
+int cd(char *path) {
+    return chdir(path);
 }
 
 void exec_command(char* command) {
 	if (strcmp(command, "") == 0) {
 		return;
 	}
+	char** args = parse_arguments(command);
 	//check if the last argurment is "&" or not (by using the "isAnd" variable)
 	//if the last argurment is "&" then the parent and child processes will run concurrently
-	bool isAnd = false;
-	char** args = parse_arguments(command, &isAnd);
+	bool isAnd = haveAndAtLast(args);
 	//Fork a child process 
 	pid_t child_pid = fork();
-	
+	int waitChild = 1;
 	if (child_pid < 0) {
 		//Parent process, but child couldn't be created
 		perror("Fork failed");
@@ -58,21 +70,27 @@ void exec_command(char* command) {
 
 	if (child_pid == 0) { 
 		//Child process
-		if (execvp(args[0], args) < 0) { // catch error
+		if (strcmp(args[0], "cd") == 0) {
+            if (cd(args[1]) < 0) {
+                perror(args[0]);
+                free(args); // free up memory for arguments
+				exit(EXIT_FAILURE);
+            }
+        }
+		else if (execvp(args[0], args) < 0) { // catch error
 			perror(args[0]);
 			free(args); // free up memory for arguments
 			exit(EXIT_FAILURE);
 		}
 	} 
-	else if (child_pid > 0) { 
+	else if (child_pid > 0) {
+		//Parent process
 		int status = 0;
 		pid_t wpid;
-		//Parent process
 		//Process wait if command have &
 		if (!isAnd){
 			while((wpid = wait(&status)) > 0);
 		}
-		//printf("parent finished\n");
 	}
 	free(args);
 }
@@ -86,7 +104,7 @@ int main() {
 		printf("ssh> ");
 		fflush(stdout);
 		fgets(command, MAX_LENGTH, stdin);
-		char** args = parse_arguments(command, NULL);
+		char** args = parse_arguments(command);
 		if (!args[0]) { // if command is empty
 			free(args);
 			continue;
