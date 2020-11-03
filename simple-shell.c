@@ -71,14 +71,7 @@ void exec_command(char* command) {
 
 	if (child_pid == 0) { 
 		//Child process
-		if (strcmp(args[0], "cd") == 0) {
-            if (cd(args[1]) < 0) {
-                perror(args[0]);
-                free(args); // free up memory for arguments
-				exit(EXIT_FAILURE);
-            }
-        }
-		else if (execvp(args[0], args) < 0) { // catch error
+		if (execvp(args[0], args) < 0) { // catch error
 			perror(args[0]);
 			free(args); // free up memory for arguments
 			exit(EXIT_FAILURE);
@@ -110,17 +103,25 @@ int main() {
 			free(args);
 			continue;
 		}
+		if (strcmp("exit", args[0]) == 0){
+			free(args);
+			should_run = 0;
+			break;
+		}
 		if (strcmp("!!", args[0]) != 0) {
 			if (history) 
 				free(history);
 			history = (char*)malloc((strlen(command) + 1) * sizeof(char));
 			strcpy(history, command);
 		}
-		if (strcmp("exit", args[0]) == 0){
-			free(args);
-			should_run = 0;
-			break;
-		}
+		if (strcmp(args[0], "cd") == 0) {
+            if (cd(args[1]) < 0) {
+                perror(args[0]);
+                free(args); // free up memory for arguments
+				exit(EXIT_FAILURE);
+            }
+            continue;
+        }
 		if (strcmp("!!", args[0]) == 0) { // Command from history buffer
 			if (!history) {
 				printf("%s\n", empty_history);
