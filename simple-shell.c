@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <stdbool.h> //type bool
 #define MAX_LENGTH	80 // The maximum length command
 #define MAX_ARGS	MAX_LENGTH/2 //The maximum number of arguments
