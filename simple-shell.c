@@ -3,13 +3,13 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/types.h>
-// #include <stdbool.h> //type bool
+#include <stdbool.h> //type bool
 #define MAX_LENGTH	80 // The maximum length command
 #define MAX_ARGS	MAX_LENGTH/2 //The maximum number of arguments
 char temp[MAX_LENGTH];
 
 //split string command to arguments
-char** parse_arguments(char *command) {
+char** parse_arguments(char *command, bool* isAnd) {
 	char delim[] = " \n\t\r\a";
 	unsigned int args_size = MAX_ARGS;
 	char** args = (char**)malloc(args_size * sizeof(char*));
@@ -30,6 +30,11 @@ char** parse_arguments(char *command) {
         param = strtok(NULL, delim);
     }
     args[size] = NULL;
+	//check if the last agrugemt is "&"
+    if (isAnd && strcmp("&", args[size-1]) == 0){
+    	*isAnd = true;
+    	args[size-1] = NULL; // delete the last "&" argument
+    }
     return args;
 }
 
@@ -37,10 +42,13 @@ void exec_command(char* command) {
 	if (strcmp(command, "") == 0) {
 		return;
 	}
-	char** args = parse_arguments(command);
+	//check if the last argurment is "&" or not (by using the "isAnd" variable)
+	//if the last argurment is "&" then the parent and child processes will run concurrently
+	bool isAnd = false;
+	char** args = parse_arguments(command, &isAnd);
 	//Fork a child process 
 	pid_t child_pid = fork();
-	int waitChild = 1;
+	
 	if (child_pid < 0) {
 		//Parent process, but child couldn't be created
 		perror("Fork failed");
@@ -57,9 +65,14 @@ void exec_command(char* command) {
 		}
 	} 
 	else if (child_pid > 0) { 
+		int status = 0;
+		pid_t wpid;
 		//Parent process
 		//Process wait if command have &
-		if (!waitChild){}
+		if (!isAnd){
+			while((wpid = wait(&status)) > 0);
+		}
+		//printf("parent finished\n");
 	}
 	free(args);
 }
@@ -73,7 +86,7 @@ int main() {
 		printf("ssh> ");
 		fflush(stdout);
 		fgets(command, MAX_LENGTH, stdin);
-		char** args = parse_arguments(command);
+		char** args = parse_arguments(command, NULL);
 		if (!args[0]) { // if command is empty
 			free(args);
 			continue;
