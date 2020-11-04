@@ -283,6 +283,7 @@ int main() {
 		switch (type) {
 		case SINGLE_COMMAND:
 			exec_command(token1);
+			break;
 		case INPUT_REDIRECTION:
 			input_redirection(token1, token2);
 			break;
@@ -290,7 +291,9 @@ int main() {
 			output_redirection(token1, token2);
 			break;
 		default:
-			perror("Invalid/Unsupported command");
+			token1 = NULL;
+			token2 = NULL;
+			printf("Invalid/Unsupported command\n");
 		}
 		free(temp);
 	}
