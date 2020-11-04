@@ -221,6 +221,8 @@ int main() {
 	char empty_history[] = "No commands in history";
 	char* history = NULL; // History buffer
 	char* temp;
+	char* token1 = NULL;
+	char* token2 = NULL;
 	while (should_run) {
 		printf("%s", shell_name);
 		fflush(stdout);
@@ -271,8 +273,6 @@ int main() {
 			}
 		}
 		free(args);
-		char* token1 = NULL;
-		char* token2 = NULL;
 		int type = check_input_type(temp, &token1, &token2);
 		switch (type) {
 		case INPUT_REDIRECTION:
