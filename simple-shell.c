@@ -61,9 +61,9 @@ void exec_command(char* command) {
 		return;
 	}
 	char** args = parse_arguments(command);
-	//check if the last argurment is "&" or not (by using the "waitChild" variable)
+	//check if the last argurment is "&" or not (by using the "hasAmpersand" variable)
 	//if the last argurment is "&" then the parent and child processes will run concurrently
-	bool waitChild = hasAmpersandAtLast(args);
+	bool hasAmpersand = hasAmpersandAtLast(args);
 	//Fork a child process 
 	pid_t child_pid = fork();
 	if (child_pid < 0) {
@@ -86,7 +86,7 @@ void exec_command(char* command) {
 		int status = 0;
 		pid_t wpid;
 		//Process wait if command have &
-		if (!waitChild){
+		if (!hasAmpersand){
 			while((wpid = wait(&status)) > 0);
 		}
 	}
@@ -107,6 +107,11 @@ char** parse_redirection(char* input_line) {
 int check_input_type(char* input_line, char** cmd1, char** cmd2) {
 	int type = SINGLE_COMMAND;
 	char** cmd_list = NULL;
+	if (strchr(input_line, '<') && strchr(input_line, '>')) {
+		*cmd1 = NULL;
+		*cmd2 = NULL;
+		return -1;
+	}
 	if (strchr(input_line, '<')) 
 		type = INPUT_REDIRECTION;
 	else if (strchr(input_line, '>'))
@@ -223,6 +228,7 @@ int main() {
 	char* temp;
 	char* token1 = NULL;
 	char* token2 = NULL;
+	int type = SINGLE_COMMAND;
 	while (should_run) {
 		printf("%s", shell_name);
 		fflush(stdout);
@@ -273,8 +279,10 @@ int main() {
 			}
 		}
 		free(args);
-		int type = check_input_type(temp, &token1, &token2);
+		type = check_input_type(temp, &token1, &token2);
 		switch (type) {
+		case SINGLE_COMMAND:
+			exec_command(token1);
 		case INPUT_REDIRECTION:
 			input_redirection(token1, token2);
 			break;
@@ -282,7 +290,7 @@ int main() {
 			output_redirection(token1, token2);
 			break;
 		default:
-			exec_command(token1);
+			perror("Invalid/Unsupported command");
 		}
 		free(temp);
 	}
