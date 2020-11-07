@@ -97,6 +97,13 @@ void exec_command(char* command) {
 	char** args = parse_arguments(command);
 	//check if the last argurment is "&" or not (by using the "hasAmpersand" variable)
 	//if the last argurment is "&" then the parent and child processes will run concurrently
+	if (strcmp(args[0], "cd") == 0) {
+        if (cd(args[1]) < 0) {
+            perror(args[0]);
+        }
+		free(args); // free up memory for arguments
+        return;
+    }
 	bool hasAmpersand = hasAmpersandAtLast(args);
 
 	int pipePos = isPipeCommand(args);
@@ -294,22 +301,14 @@ int main() {
 			should_run = 0;
 			break;
 		}
-		if (strcmp(args[0], "cd") == 0) {
-            if (cd(args[1]) < 0) {
-                perror(args[0]);
-            }
-			free(args); // free up memory for arguments
-			free(temp);
-            continue;
-        }
 		if (strcmp("!!", args[0]) != 0) {
 			if (history) 
 				free(history);
 			history = (char*)malloc((strlen(input_line) + 1) * sizeof(char));
-			strcpy(history, input_line);
+			strcpy(history, input_line); // copy command to history
 			strcpy(temp, input_line);
 		}
-		if (strcmp("!!", args[0]) == 0) { // Command from history buffer
+		if (strcmp("!!", args[0]) == 0) { // call command from history buffer
 			if (!history) {
 				printf("%s\n", empty_history);
 				fflush(stdout);
