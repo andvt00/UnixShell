@@ -14,19 +14,19 @@
 #define INPUT_REDIRECTION 1
 #define OUTPUT_REDIRECTION 2
 
-int cd(char *path); // cd command
+int cd(char* path); // cd command
 // Command's type checking
 bool hasAmpersandAtLast(char** args); // check if command has &
 int check_input_type(char* input_line, char** cmd1, char** cmd2); // check if command is single or i/o redirection
-int isPipeCommand(char **args); // check if command is a pipe
+int isPipeCommand(char** args); // check if command is a pipe
 // Parsing
-char** parse_arguments(char *command); // split command string to arguments
+char** parse_arguments(char* command); // split command string to arguments
 char** parse_redirection(char* input_line); // split i/o redirection to command and file name
 // Command executing
 void exec_command(char* command);  // execute command
 void input_redirection(char* token1, char* token2); // input redirection handling
 void output_redirection(char* token1, char* token2); // output redirection handling
-bool execPipeCommand(char **cmd1, char **cmd2, bool hasAmpersand); // execute pipe command
+bool execPipeCommand(char** cmd1, char** cmd2, bool hasAmpersand); // execute pipe command
 
 int main() {
 	char input_line[MAX_LENGTH];
@@ -102,7 +102,7 @@ int main() {
 	return 0;
 } 
 
-int cd(char *path) {
+int cd(char* path) {
 	return chdir(path);
 }
 
@@ -112,8 +112,8 @@ bool hasAmpersandAtLast(char** args) {
 	int size = 1;
 	while (args[size])
 		size++;
-	if (strcmp("&", args[size-1])==0) {
-		args[size-1] = NULL; // delete the last "&" argument
+	if (strcmp("&", args[size-1]) == 0) {
+		args[size - 1] = NULL; // delete the last "&" argument
 		return true;
 	}
 	return false;
@@ -144,17 +144,17 @@ int check_input_type(char* input_line, char** cmd1, char** cmd2) {
 	return type;
 }
 
-int isPipeCommand(char **args) {
+int isPipeCommand(char** args) {
 	// Check if the command only has one pipe character and no other redirection operators
 	int i = 0;
 	int nPipeChar = 0;
 	int pos = -1;
 	while(args[i] != NULL)
 	{
-		if (strcmp("<", args[i])==0 || strcmp(">", args[i])==0 ) {
+		if (strcmp("<", args[i]) == 0 || strcmp(">", args[i]) == 0 ) {
 			return false;
 		}
-		else if (strcmp("|", args[i])==0) {
+		else if (strcmp("|", args[i]) == 0) {
 			nPipeChar++;
 			pos = i;
 		}
@@ -169,7 +169,7 @@ int isPipeCommand(char **args) {
 	return -1;
 }
 
-char** parse_arguments(char *command) {
+char** parse_arguments(char* command) {
 	char delim[] = " \n\t\r\a";
 	unsigned int args_size = DEF_ARGS;
 	char** args = (char**)malloc(args_size * sizeof(char*));
@@ -350,7 +350,7 @@ void output_redirection(char* token1, char* token2) {
 	free(filenames);
 }
 
-bool execPipeCommand(char **cmd1, char **cmd2, bool hasAmpersand)
+bool execPipeCommand(char** cmd1, char** cmd2, bool hasAmpersand)
 {
 	int pd[2]; // 0 end is reading, 1 end is writing
 	if (pipe(pd) < 0)
