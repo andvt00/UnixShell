@@ -50,7 +50,7 @@ int main() {
 			free(temp);
 			continue;
 		}
-		if (strcmp("exit", args[0]) == 0){
+		if (strcmp("exit", args[0]) == 0) {
 			free(args);
 			free(temp);
 			should_run = 0;
@@ -103,7 +103,7 @@ int main() {
 } 
 
 int cd(char *path) {
-    return chdir(path);
+	return chdir(path);
 }
 
 bool hasAmpersandAtLast(char** args) {
@@ -112,11 +112,11 @@ bool hasAmpersandAtLast(char** args) {
 	int size = 1;
 	while (args[size])
 		size++;
-	if (strcmp("&", args[size-1])==0){
-    	args[size-1] = NULL; // delete the last "&" argument
-    	return true;
-    }
-    return false;
+	if (strcmp("&", args[size-1])==0) {
+		args[size-1] = NULL; // delete the last "&" argument
+		return true;
+	}
+	return false;
 }
 
 int check_input_type(char* input_line, char** cmd1, char** cmd2) {
@@ -151,10 +151,10 @@ int isPipeCommand(char **args) {
 	int pos = -1;
 	while(args[i] != NULL)
 	{
-		if (strcmp("<", args[i])==0 || strcmp(">", args[i])==0 ){
+		if (strcmp("<", args[i])==0 || strcmp(">", args[i])==0 ) {
 			return false;
 		}
-		else if (strcmp("|", args[i])==0){
+		else if (strcmp("|", args[i])==0) {
 			nPipeChar++;
 			pos = i;
 		}
@@ -173,11 +173,11 @@ char** parse_arguments(char *command) {
 	char delim[] = " \n\t\r\a";
 	unsigned int args_size = DEF_ARGS;
 	char** args = (char**)malloc(args_size * sizeof(char*));
-    char* param;
-    param = strtok(command, delim);
-    int size = 0;
-    while (param != NULL) {
-       	args[size] = param;
+	char* param;
+	param = strtok(command, delim);
+	int size = 0;
+	while (param != NULL) {
+		args[size] = param;
 		if (++size >= args_size) {
 			args_size += DEF_ARGS;
 			args = (char**)realloc(args, args_size * sizeof(char*));
@@ -186,10 +186,10 @@ char** parse_arguments(char *command) {
 				exit(EXIT_FAILURE);
 			}
 		}
-        param = strtok(NULL, delim);
-    }
-    args[size] = NULL;
-    return args;
+		param = strtok(NULL, delim);
+	}
+	args[size] = NULL;
+	return args;
 }
 
 char** parse_redirection(char* input_line) {
@@ -211,12 +211,12 @@ void exec_command(char* command) {
 	// Check if the last argurment is "&" or not (by using the "hasAmpersand" variable)
 	// If the last argurment is "&" then the parent and child processes will run concurrently
 	if (strcmp(args[0], "cd") == 0) {
-        if (cd(args[1]) < 0) {
-            perror(args[0]);
-        }
+		if (cd(args[1]) < 0) {
+			perror(args[0]);
+		}
 		free(args); // free up memory for arguments
-        return;
-    }
+		return;
+	}
 	bool hasAmpersand = hasAmpersandAtLast(args);
 
 	int pipePos = isPipeCommand(args);
@@ -252,7 +252,7 @@ void exec_command(char* command) {
 			int status = 0;
 			pid_t wpid;
 			// Process wait if command have &
-			if (!hasAmpersand){
+			if (!hasAmpersand) {
 				while((wpid = wait(&status)) > 0);
 			}
 		}
@@ -297,7 +297,7 @@ void input_redirection(char* token1, char* token2) {
 		int status = 0;
 		pid_t wpid;
 		// Process wait if command have &
-		if (!hasAmpersand){
+		if (!hasAmpersand) {
 			while((wpid = wait(&status)) > 0);
 		}
 	}
@@ -342,7 +342,7 @@ void output_redirection(char* token1, char* token2) {
 		int status = 0;
 		pid_t wpid;
 		// Process wait if command have &
-		if (!hasAmpersand){
+		if (!hasAmpersand) {
 			while((wpid = wait(&status)) > 0);
 		}
 	}
@@ -411,20 +411,19 @@ bool execPipeCommand(char **cmd1, char **cmd2, bool hasAmpersand)
 			if (!hasAmpersand)
 			{
 				waitpid(pid1, NULL, 0); 
-            	waitpid(pid1, NULL, 0); 
-
+				waitpid(pid1, NULL, 0); 
 			}
 			// Since file descriptors are inherited(copied) when calling fork(), they still exits in the parent process
 			// Therefore, we have to close the pipe
 			close(pd[0]);
-            close(pd[1]);
+			close(pd[1]);
 		}
 
 	}
 	// Since file descriptors are inherited (copied) when calling fork()
 	// We have to close the pipe
 	close(pd[0]);
-    close(pd[1]);
+	close(pd[1]);
 	return true;
 
 }
