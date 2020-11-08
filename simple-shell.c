@@ -170,15 +170,15 @@ int isPipeCommand(char** args) {
 }
 
 char** parse_arguments(char* command) {
-	char delim[] = " \n\t\r\a";
+	char delim[] = " \n\t\r\a"; // delimeter for string splitting
 	unsigned int args_size = DEF_ARGS;
 	char** args = (char**)malloc(args_size * sizeof(char*));
-	char* param;
-	param = strtok(command, delim);
-	int size = 0;
-	while (param != NULL) {
-		args[size] = param;
-		if (++size >= args_size) {
+	char* token;
+	token = strtok(command, delim);
+	int size = 0; // number of args
+	while (token != NULL) {
+		args[size] = token;
+		if (++size >= args_size) { // number of args exceeding current max. size
 			args_size += DEF_ARGS;
 			args = (char**)realloc(args, args_size * sizeof(char*));
 			if (!args) {
@@ -186,19 +186,20 @@ char** parse_arguments(char* command) {
 				exit(EXIT_FAILURE);
 			}
 		}
-		param = strtok(NULL, delim);
+		token = strtok(NULL, delim);
 	}
 	args[size] = NULL;
 	return args;
 }
 
 char** parse_redirection(char* input_line) {
-	char delim[] = "<>";
-	char** cmd_list = (char**)malloc(3*sizeof(char*));
+	// Structure: [command] [op] [file]
+	char delim[] = "<>"; // [op], delimeter for string splitting
+	char** cmd_list = (char**)malloc(3 * sizeof(char*));
 	char* token = strtok(input_line, delim);
-	cmd_list[0] = token;
+	cmd_list[0] = token; // [command] part
 	token = strtok(NULL, "\n");
-	cmd_list[1] = token;
+	cmd_list[1] = token; // [file] part
 	cmd_list[2] = NULL;
 	return cmd_list;
 }
@@ -275,7 +276,7 @@ void input_redirection(char* token1, char* token2) {
 
 	if (child_pid == 0) { 
 		// Child process
-		int fd = open(filenames[0], O_RDONLY);
+		int fd = open(filenames[0], O_RDONLY); // Open file with read-only mode
 		if (fd < 0) {
 			perror("Open failed");
 			exit(EXIT_FAILURE);
@@ -320,7 +321,7 @@ void output_redirection(char* token1, char* token2) {
 
 	if (child_pid == 0) { 
 		// Child process
-		int fd = creat(filenames[0], S_IRWXU);
+		int fd = creat(filenames[0], S_IRWXU); // Create a file with read-write-execute permission
 		if (fd < 0) {
 			perror("Open failed");
 			exit(EXIT_FAILURE);
